@@ -14,6 +14,7 @@ const char* opcodes[] = {
         "DEC",
         "HLT",
         "INC",
+        "LD",
         "JMP",
         "JNC",
         "JNS",
@@ -25,6 +26,7 @@ const char* opcodes[] = {
         "ROL",
         "ROR",
         "SBB",
+        "ST",
         "SUB",
         "XOR",
         NULL

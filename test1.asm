@@ -1,8 +1,9 @@
-        
+
+       
+; Viktor T Toths multiplication program 
         ORG $0000
 
-BEGIN:
-        CLF             ; Initialize
+BEGIN:  CLF             ; Initialize
         AND #$0000       ; Load 0 to accumulator
         ST  A,$00FE       ; Set #FE to 0
         LD  A,$00FC       ; Load first argument
@@ -13,17 +14,15 @@ BEGIN:
         ST  A,ADDVAL + 1  ; Store as argument to ADD instruction
         LD  A,$00FA       ; Load first argument
         CLF             ;
-GETBIT:
-        ROR             ; Take one bit
+
+GETBIT: ROR             ; Take one bit
         ST  A,$00FA       ; Store the rest
         JNC MULT        ; If not 1, no need to add
         LD  A,$00FE       ; Load result
         CLF             ;
-ADDVAL:
-        ADD #$0000       ; Add second argument (stored here)
+ADDVAL: ADD #$0000       ; Add second argument (stored here)
         ST  A,$00FE       ; Store result
-MULT:
-        LD  A,ADDVAL + 1  ; Load second argument
+MULT:   LD  A,ADDVAL + 1  ; Load second argument
         CLF             ; Multiply by 2
         ROL             ;
         ST  A,ADDVAL + 1  ; Store

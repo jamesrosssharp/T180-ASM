@@ -14,6 +14,8 @@ public:
 
     AssemblerResult assemble(const char* infile, bool compileOnly = false, bool hexOutput = false, const char* outfile = NULL);  
 
+    void printTokens();
+
 private:
 
     std::vector <TokenVector*> m_lineTokens;

@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 
+#include "Token.h"
 #include "Retcode.h"
 
 class TokenVector
@@ -15,8 +16,10 @@ public:
     
     AssemblerResult tokenize(std::string line);
 
+    void print();
+
 private:
 
-    std::vector <std::string*> tokens; 
+    std::vector <Token*> m_tokens; 
 
 };
