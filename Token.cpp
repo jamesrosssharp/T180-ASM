@@ -34,3 +34,13 @@ void Token::print()
 
     std::cout << std::endl;
 }
+
+const Token::TokenType   Token::getType() const
+{
+    return m_type;
+}
+
+const std::string* Token::getToken() const
+{
+    return &m_token;
+}

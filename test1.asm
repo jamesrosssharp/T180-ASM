@@ -1,4 +1,4 @@
-
+        #include "test2.asm"
        
 ; Viktor T Toths multiplication program 
         ORG $0000

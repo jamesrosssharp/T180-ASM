@@ -20,6 +20,9 @@ public:
 
     void print();
 
+    const TokenType    getType() const;
+    const std::string* getToken() const;
+
 private:
 
     std::string  m_token;

@@ -8,6 +8,7 @@ const char* psopcodes[] =
         "ORG",
         "DC.W",
         "DC.B",
+        "EQU",
         NULL
     };
 

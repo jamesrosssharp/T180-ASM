@@ -14,12 +14,18 @@ public:
     TokenVector();
     ~TokenVector();
     
-    AssemblerResult tokenize(std::string line);
+    AssemblerResult tokenize(const std::string& file, int lineNo, const std::string& line);
 
     void print();
+
+    const Token* getToken(int idx) const;
 
 private:
 
     std::vector <Token*> m_tokens; 
+    
+    std::string* m_file;
+    std::string* m_line;
+    int          m_lineNo;
 
 };
