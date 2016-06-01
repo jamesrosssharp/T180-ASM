@@ -15,11 +15,30 @@
 
 Assembler::Assembler()
 {
+
+
 }
 
 Assembler::~Assembler()
 {
     // iterate over m_lineTokens and destroy all the token vectors
+
+    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
+        delete (*iter);
+
+}
+
+void Assembler::PrintError(const std::string* file, const std::string* line, const int lineNo, const Token* token, const char* errorMsg)
+{
+    int tokenPos = line->find(*token->getToken());
+
+    std::cout << std::endl << "In file " << *file << ", line " << lineNo << ":" << std::endl;
+
+    std::cout << *line << std::endl;
+
+    for(int i = 0; i < tokenPos; i ++)
+        std::cout << " ";
+    std::cout << "^--- " << errorMsg << std::endl; 
 }
 
 AssemblerResult Assembler::tokenize(const char* infile)
@@ -108,7 +127,38 @@ AssemblerResult Assembler::assemble(const char* infile, bool compileOnly, bool h
     // print out token vector
 
     //printTokens();
-    
+
+    // build table of constants
+
+    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
+        if ((*iter)->getToken(1) != NULL)
+             if ((*iter)->getToken(1)->getType() == Token::PSEUDO_OPCODE && PseudoOpCode::isConstant((*iter)->getToken(1)->getToken()))
+             {
+                AssemblerResult result;  
+                result = m_constantTable.addConstant(*iter);
+
+                if (result != ASSEMBLER_OK)
+                {
+                    switch (result)
+                    {
+                        case ASSEMBLER_CONSTANT_REDEFINED:  
+                            PrintError((*iter)->getFile(), (*iter)->getLine(), (*iter)->getLineNo(), (*iter)->getToken(0), 
+                                        "Constant redefined");
+                            break;
+                        case ASSEMBLER_BAD_EXPRESSION:
+                            PrintError((*iter)->getFile(), (*iter)->getLine(), (*iter)->getLineNo(), (*iter)->getToken(2),
+                                        "Bad expression");
+                            break;
+                        default:
+                            PrintError((*iter)->getFile(), (*iter)->getLine(), (*iter)->getLineNo(), (*iter)->getToken(0),
+                                        "Unspecified error");
+                            break;
+                    }
+                    return result;
+                 }
+
+             }
+ 
     // build symbol table
     
     for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
@@ -118,7 +168,8 @@ AssemblerResult Assembler::assemble(const char* infile, bool compileOnly, bool h
 
     // print out symbol table
     
-    printSymbols();    
+    //printSymbols();    
+    printConstants();
 
     // assemble
 
@@ -135,4 +186,9 @@ void Assembler::printTokens()
 void Assembler::printSymbols()
 {
     m_symbolTable.print();
+}
+
+void Assembler::printConstants()
+{
+    m_constantTable.print();
 }

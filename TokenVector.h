@@ -19,6 +19,9 @@ public:
     void print();
 
     const Token* getToken(int idx) const;
+    const std::string* getFile() const;
+    const std::string* getLine() const;
+    const int     getLineNo() const;
 
 private:
 

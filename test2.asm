@@ -1,2 +1,5 @@
 AN_EQUATE       EQU     $5000
 ANOTHER_EQUATE  EQU     267
+GOOD_EQUATE     EQU     $40 + 1
+BETTER_EQUATE   EQU     GOOD_EQUATE - 2
+;BAD_EQUATE      EQU     some_symbol + 1

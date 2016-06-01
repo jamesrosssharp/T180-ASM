@@ -82,19 +82,8 @@ AssemblerResult TokenVector::tokenize(const std::string& file, int lineNo, const
         }
         else
         {
-            // invalid token. find token in the line
-           
-            int tokenPos = line.find(token);
-
-            std::cout << *m_file << ", line " << m_lineNo << ":" << std::endl;
-
-            std::cout << line << std::endl;
-
-            for(int i = 0; i < tokenPos; i ++)
-                std::cout << " ";
-            std::cout << "^--- Invalid token" << std::endl; 
-
-            return ASSEMBLER_INVALID_TOKEN;
+            Token* tok_c = new Token(Token::UNKNOWN, token);
+            m_tokens.push_back(tok_c);            
         }
 
     }  
@@ -227,3 +216,20 @@ const Token* TokenVector::getToken(int idx) const
     else
         return NULL;
 }
+
+const std::string* TokenVector::getFile() const
+{
+    return m_file;
+}
+
+const std::string* TokenVector::getLine() const
+{
+    return m_line;
+}
+
+const int     TokenVector::getLineNo() const
+{
+    return m_lineNo;
+}
+
+

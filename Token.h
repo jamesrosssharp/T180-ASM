@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <string>
@@ -12,7 +11,8 @@ public:
         LABEL,
         OPCODE,
         PSEUDO_OPCODE,
-        OPERAND
+        OPERAND,
+        UNKNOWN
     };
 
     Token(TokenType type, const char* token);

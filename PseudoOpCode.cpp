@@ -35,3 +35,8 @@ bool PseudoOpCode::isPseudoOpCode(const char* token)
     return false;
 
 }
+
+bool PseudoOpCode::isConstant(const std::string* token)
+{
+    return *token == std::string("EQU");
+}
