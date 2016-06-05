@@ -32,13 +32,12 @@ AssemblerResult ConstantTable::addConstant(TokenVector* tv)
     Constant* cons = new Constant(str, val);
 
     // Search through table of constants to see if the constant already exists
-   
-    for (std::vector<Constant*>::iterator iter = m_constants.begin(); iter != m_constants.end(); iter++)
-        if (**iter == *cons)
-        {
-            delete cons;
-            return ASSEMBLER_CONSTANT_REDEFINED;
-        }   
+  
+    if (hasConstant(str->c_str()))
+    { 
+        delete cons;
+        return ASSEMBLER_CONSTANT_REDEFINED;
+    }   
 
     m_constants.push_back(cons);
 

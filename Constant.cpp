@@ -34,13 +34,31 @@ bool operator == (Constant& a, Constant& b)
 
 bool Constant::IsValidHexString(const char* str)
 {
-    for (int i = 0; i < strlen(str); i++)
+
+    if (! (str[0] == '$') && ! isdigit(str[0]))
+        return false; 
+
+    for (int i = 1; i < strlen(str); i++)
     {
         if (! isxdigit(str[i]))
             return false; 
     }
 
     return true;
+}
+
+unsigned short Constant::ParseHexString(const char* tok)
+{
+      
+    char str[1024];
+
+    strncpy(str, &tok[1], 1024);
+        
+    str[strlen(tok)-1] = '\0';            
+
+    unsigned short hexval = strtol(str, NULL, 16);
+
+    return hexval;
 }
 
 bool Constant::IsValidInteger(const char* str)

@@ -24,6 +24,8 @@ public:
     static bool IsValidHexString(const char* str);
     static bool IsValidInteger(const char* str);
 
+    static unsigned short ParseHexString(const char* tok);
+
     void print();
 
 private:

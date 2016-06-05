@@ -12,11 +12,11 @@
 #include <string.h>
 
 #include "Assembler.h"
+#include "PseudoOpCode.h"
+#include "OpCode.h"
 
 Assembler::Assembler()
 {
-
-
 }
 
 Assembler::~Assembler()
@@ -30,7 +30,9 @@ Assembler::~Assembler()
 
 void Assembler::PrintError(const std::string* file, const std::string* line, const int lineNo, const Token* token, const char* errorMsg)
 {
-    int tokenPos = line->find(*token->getToken());
+    int tokenPos = line->find((token->getToken())->c_str());
+
+    std::cout << "!!!" << token->getToken()->c_str() << "!!!";
 
     std::cout << std::endl << "In file " << *file << ", line " << lineNo << ":" << std::endl;
 
@@ -114,6 +116,91 @@ AssemblerResult Assembler::tokenize(const char* infile)
     return ASSEMBLER_OK; 
 }
 
+
+std::string Assembler::ToUpper(const std::string* s)
+{
+    
+    std::string tok;
+
+    for (int i = 0; i < s->length(); i ++)
+        tok.push_back(std::toupper((*s)[i]));
+
+    return tok;
+
+}
+
+void Assembler::setAssemblerAddress(unsigned short address)
+{
+
+    //std::cout << "Setting assembler address " << address << std::endl;
+
+    m_address = address;
+}
+
+unsigned short Assembler::getAssemblerAddress()
+{
+    return m_address;
+}
+
+void    Assembler::advanceAssemblerAddress(unsigned short num_bytes)
+{
+    m_address += num_bytes;
+}
+
+AssemblerResult Assembler::assembleLine(TokenVector* tv)
+{
+
+    bool lineAssembled = false;
+
+    const Token* tok1 = tv->getToken(0);
+
+    if (tok1 == NULL)
+        return ASSEMBLER_OK;
+
+    switch (tok1->getType())
+    {
+        case Token::LABEL:
+            //tok1->setLabelAddress();
+            // find the symbol in the symbol table 
+            break; 
+        case Token::OPCODE:
+        {
+            AssemblerResult res = OpCode::AssembleOpCode(this, 0, tv);
+
+            if (res == ASSEMBLER_ASSEMBLY_COMPLETE)
+                lineAssembled = true;
+            else if (res != ASSEMBLER_OK)
+                return res;
+
+            break;
+        }
+        case Token::PSEUDO_OPCODE:
+        {
+            AssemblerResult res = PseudoOpCode::handlePseudoOpCode(this, 0, tv);
+
+            if (res == ASSEMBLER_ASSEMBLY_COMPLETE)
+                lineAssembled = true;
+            else if (res != ASSEMBLER_OK)
+                return res;
+
+            break;
+        }
+    }
+
+    if (lineAssembled)
+    {
+
+    }
+    else
+    {
+
+
+    }
+
+    return ASSEMBLER_OK;
+
+}
+
 AssemblerResult Assembler::assemble(const char* infile, bool compileOnly, bool hexOutput, const char* outfile)
 {
 
@@ -169,10 +256,36 @@ AssemblerResult Assembler::assemble(const char* infile, bool compileOnly, bool h
     // print out symbol table
     
     //printSymbols();    
-    printConstants();
+    //printConstants();
 
     // assemble
+ 
+    setAssemblerAddress(0);
 
+    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
+    {
+        AssemblerResult result;
+
+        result = assembleLine(*iter);
+
+        switch (result)
+        {   
+            case ASSEMBLER_OK:
+                break;
+            default:
+                std::cout << "Error" << std::endl;
+                return result; 
+        }
+    }
+
+    // print assembly
+    
+    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
+    {
+        (*iter)->printAssembly();
+    }
+     
+    std::cout << std::endl;
 }
 
 void Assembler::printTokens()

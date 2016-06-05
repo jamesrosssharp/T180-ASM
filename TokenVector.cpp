@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <string.h>
 #include <stdio.h>
@@ -61,7 +62,7 @@ AssemblerResult TokenVector::tokenize(const std::string& file, int lineNo, const
             Token* tok_c = new Token(Token::LABEL, token);
             m_tokens.push_back(tok_c);            
         }
-        else if (OpCode::isOpCode(token))
+        else if (OpCode::IsOpCode(token))
         {
             opCodeFound = true; 
 
@@ -110,7 +111,7 @@ AssemblerResult TokenVector::tokenize(const std::string& file, int lineNo, const
                 return ASSEMBLER_LABEL_INVALID;
    
             }
-            else if (OpCode::isOpCode(token))
+            else if (OpCode::IsOpCode(token))
             {
                 opCodeFound = true; 
  
@@ -189,7 +190,7 @@ AssemblerResult TokenVector::tokenize(const std::string& file, int lineNo, const
 
         if (idx > 0)
         {
-            operand[idx++] = '\0';
+            operand[--idx] = '\0';
         
             Token* tok_c = new Token(Token::OPERAND, operand);
             m_tokens.push_back(tok_c);      
@@ -232,4 +233,25 @@ const int     TokenVector::getLineNo() const
     return m_lineNo;
 }
 
+void        TokenVector::resetAssembly()
+{
+    m_assembled_bytes.erase(m_assembled_bytes.begin(), m_assembled_bytes.end()); 
+}
 
+void        TokenVector::pushAssembledByte(unsigned char byte)
+{
+    m_assembled_bytes.push_back(byte);
+}
+
+void        TokenVector::setAssembledAddress(unsigned short address)
+{
+    m_assembled_address = address;
+}
+
+void        TokenVector::printAssembly()
+{
+    for (std::vector<unsigned char>::iterator iter = m_assembled_bytes.begin(); iter != m_assembled_bytes.end(); iter++)
+        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)(*iter) << " ";
+
+
+}
