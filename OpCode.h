@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Retcode.h"
 #include "TokenVector.h"
 
@@ -32,6 +34,9 @@ public:
     static  bool IsOpCode(const char* token);
     static  AssemblerResult AssembleOpCode(Assembler* assem, int tokenIdx, TokenVector* tv);   
 
-    static  AssemblerResult ParseExpression(Assembler* assem, const Token* operand, OpCode::Register& reg, unsigned short& value, OpCode::AddressingMode& add);
+    static  AssemblerResult ParseExpression(Assembler* assem, const Token* operand, OpCode::Register& reg, 
+                                            unsigned short& value, OpCode::AddressingMode& add);
+    static  AssemblerResult ParseConstantTerm(Assembler* assem, std::string constant, unsigned short& value); 
+
 
 };

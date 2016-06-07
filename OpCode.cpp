@@ -275,9 +275,6 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
 
     else if (str[0] == '[' && str[strlen(str) - 1] == ']')
     {
- 
-        std::cout << "Indirect" << std::endl;
-
         add = OpCode::ADDRESSINGMODE_INDIRECT;
         
         std::string subs = s.substr(1,s.length() - 2);
@@ -286,10 +283,6 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
 
         std::string regstr = subs.substr(0, commapos);
         std::string constant = subs.substr(commapos+1, subs.length());
-
-        std::cout << subs << std::endl;
-        std::cout << commapos << std::endl;
-        std::cout << regstr << std::endl;
 
         if (regstr == "B")
         {
@@ -308,11 +301,58 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
 
         // parse the constant part of the expression
 
+        AssemblerResult res = OpCode::ParseConstantTerm(assem, constant, value);
+        
+        return res;
+
     }
 
     // indirect with index
     // of form "[op],reg" 
 
+    else if (str[0] == '[')
+    {
+        
+        add = OpCode::ADDRESSINGMODE_INDIRECT_WITH_INDEX;
+        
+        int commapos = s.find(",");
+
+        if (commapos == -1)
+        {
+            return ASSEMBLER_BAD_EXPRESSION;
+        }
+
+        std::string regstr = s.substr(commapos + 1, s.length());
+
+        std::string regstrClean = Assembler::Trim(regstr);
+
+        if (regstrClean == "B")
+        {
+            reg = OpCode::REG_B;
+        }
+        else if (regstrClean == "C")
+        {
+            reg = OpCode::REG_C;
+        } 
+        else if (regstrClean == "D")
+        {
+            reg = OpCode::REG_D;
+        }
+        else
+            return ASSEMBLER_INVALID_REGISTER;
+
+        // fish out operand string
+
+        std::string opstr = s.substr(0, commapos);
+    
+        int openBracketPos = opstr.find("[");
+        int closeBracketPos = opstr.find("]");
+
+        std::string opstrClean = opstr.substr(openBracketPos + 1, closeBracketPos - 1);
+
+        AssemblerResult res = OpCode::ParseConstantTerm(assem, opstrClean, value);
+        
+    }
 
     // indexed with operand
     // of form "reg,op"
@@ -323,6 +363,23 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
     // of form "#value +/- #symbol +/- #constant"
 
     
+    // absolute
+    // of form "value +/- symbol +/- constant"
+
+
+}
+
+
+AssemblerResult OpCode::ParseConstantTerm(Assembler* assem, std::string constant, unsigned short& value)
+{
+    
+    int val;
+    AssemblerResult res = Constant::ParseExpression(assem->getConstantTable(), assem->getSymbolTable(), &constant, val); 
+
+    value = (unsigned short)val;
+
+    return res;
+
 }
 
 #ifdef UNIT_TEST
@@ -332,7 +389,13 @@ int main(int argc, char *argv[])
 
     Assembler assem;
 
-    Token token(Token::OPERAND, "[b, $100]");
+    assem.addConstant("SOME_CONSTANT",0xaa);
+
+    assem.addSymbol("SOME_SYMBOL");
+
+    assem.setAddressForSymbol("SOME_SYMBOL", 0xfe00);
+
+    Token token(Token::OPERAND, "[$100 + SOME_CONSTANT + SOME_SYMBOL] , b");
 
     OpCode::Register reg = OpCode::REG_NONE;
     OpCode::AddressingMode add = OpCode::ADDRESSINGMODE_NONE;
@@ -389,6 +452,10 @@ int main(int argc, char *argv[])
 
     }
 
+    std::cout << " Value: ";
+
+    std::cout << value;
+
     std::cout << " Result: "; 
 
     switch (res)
@@ -399,6 +466,17 @@ int main(int argc, char *argv[])
         case ASSEMBLER_INVALID_REGISTER:
             std::cout << "Invalid register";
             break;
+        case ASSEMBLER_BAD_EXPRESSION:
+            std::cout << "Bad expression";
+            break;
+        case ASSEMBLER_ASSEMBLY_DEFERRED:
+            std::cout << "Assembly deferred";
+            break;
+        case ASSEMBLER_OK:
+            std::cout << "Ok";
+            break;
+        default:
+            std::cout << res;
     }
 
     std::cout << std::endl;

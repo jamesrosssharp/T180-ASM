@@ -34,6 +34,16 @@ public:
     void printSymbols();
     void printConstants();
 
+    SymbolTable*    getSymbolTable();
+    ConstantTable*  getConstantTable();
+
+    AssemblerResult addConstant(const char* token, int value);
+    AssemblerResult addSymbol(const char* symbol);
+
+    AssemblerResult setAddressForSymbol(const char* symbol, unsigned short address); 
+
+    static std::string Trim(const std::string& str);
+
 private:
 
     std::vector <TokenVector*> m_lineTokens;

@@ -44,6 +44,25 @@ AssemblerResult ConstantTable::addConstant(TokenVector* tv)
     return ASSEMBLER_OK; 
 }
 
+AssemblerResult ConstantTable::addConstant(const char* token, int value)
+{
+       
+    std::string s(token);
+
+    Constant* cons = new Constant(&s, value);
+
+    if (hasConstant(token))
+    {
+        delete cons;
+        return ASSEMBLER_CONSTANT_REDEFINED;
+    }
+
+    m_constants.push_back(cons);
+ 
+    return ASSEMBLER_OK;
+}
+
+
 bool ConstantTable::hasConstant(const char* token)
 {
     std::string s(token);

@@ -43,6 +43,19 @@ void Assembler::PrintError(const std::string* file, const std::string* line, con
     std::cout << "^--- " << errorMsg << std::endl; 
 }
 
+std::string Assembler::Trim(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && isspace(*it))
+        it++;
+
+    std::string::const_reverse_iterator rit = s.rbegin();
+    while (rit.base() != it && isspace(*rit))
+        rit++;
+
+    return std::string(it, rit.base());
+}
+
 AssemblerResult Assembler::tokenize(const char* infile)
 {
     std::ifstream asmfile(infile);
@@ -140,6 +153,16 @@ void Assembler::setAssemblerAddress(unsigned short address)
 unsigned short Assembler::getAssemblerAddress()
 {
     return m_address;
+}
+
+ConstantTable* Assembler::getConstantTable()
+{
+    return &m_constantTable;
+}
+
+SymbolTable* Assembler::getSymbolTable()
+{
+    return &m_symbolTable;
 }
 
 void    Assembler::advanceAssemblerAddress(unsigned short num_bytes)
@@ -304,4 +327,19 @@ void Assembler::printSymbols()
 void Assembler::printConstants()
 {
     m_constantTable.print();
+}
+
+AssemblerResult Assembler::addConstant(const char* token, int value)
+{
+    return m_constantTable.addConstant(token, value);
+}
+
+AssemblerResult Assembler::addSymbol(const char* symbol)
+{
+    return m_symbolTable.addSymbol(symbol);
+}
+
+AssemblerResult Assembler::setAddressForSymbol(const char* symbol, unsigned short address)
+{
+    return m_symbolTable.setAddressForSymbol(symbol, address);
 }

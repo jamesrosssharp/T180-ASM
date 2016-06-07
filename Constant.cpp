@@ -72,7 +72,7 @@ bool Constant::IsValidInteger(const char* str)
     return true;
 }
 
-AssemblerResult  Constant::ParseExpression(ConstantTable* const_table, SymbolTable* sym_table, const std::string* token, int& val)
+AssemblerResult  Constant::ParseExpression(ConstantTable* const_table, SymbolTable* symbol_table, const std::string* token, int& val)
 {
 
     AssemblerResult result = ASSEMBLER_OK;
@@ -147,6 +147,7 @@ AssemblerResult  Constant::ParseExpression(ConstantTable* const_table, SymbolTab
         else if (const_table != NULL && const_table->hasConstant(tok))
         {
 
+            // getConstant might return null value, check for this
             const int const_val = const_table->getConstant(tok)->getValue();
    
             if (combine_add)
@@ -154,6 +155,31 @@ AssemblerResult  Constant::ParseExpression(ConstantTable* const_table, SymbolTab
             else
                 val -= const_val;
  
+
+        }
+        else if (symbol_table != NULL && symbol_table->hasSymbol(tok))
+        {
+
+            AssemblerResult res;
+            unsigned short symAddress;
+
+            // getSymbol might return a null value, check for this
+            res = symbol_table->getSymbol(tok)->getAddress(symAddress);
+
+            if (res == ASSEMBLER_ASSEMBLY_COMPLETE)
+            {
+                if (combine_add)
+                    val += symAddress;
+                else
+                    val -= symAddress;
+
+            } 
+            else if (res == ASSEMBLER_ASSEMBLY_DEFERRED)
+            {
+                return ASSEMBLER_ASSEMBLY_DEFERRED;
+            }
+            else
+                return ASSEMBLER_BAD_EXPRESSION;
 
         }
         else
