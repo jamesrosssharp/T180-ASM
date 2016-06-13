@@ -44,6 +44,8 @@ public:
 
     static std::string Trim(const std::string& str);
 
+    static const char* ReturnCodeToString(AssemblerResult res);
+
 private:
 
     std::vector <TokenVector*> m_lineTokens;

@@ -32,8 +32,6 @@ void Assembler::PrintError(const std::string* file, const std::string* line, con
 {
     int tokenPos = line->find((token->getToken())->c_str());
 
-    std::cout << "!!!" << token->getToken()->c_str() << "!!!";
-
     std::cout << std::endl << "In file " << *file << ", line " << lineNo << ":" << std::endl;
 
     std::cout << *line << std::endl;
@@ -343,3 +341,46 @@ AssemblerResult Assembler::setAddressForSymbol(const char* symbol, unsigned shor
 {
     return m_symbolTable.setAddressForSymbol(symbol, address);
 }
+
+const char* Assembler::ReturnCodeToString(AssemblerResult res)
+{
+   
+    switch(res)
+    {
+        case ASSEMBLER_OK:
+            return "Ok";
+        case ASSEMBLER_ERROR:
+            return "Error";
+        case ASSEMBLER_ERROR_FILENOTFOUND:
+            return "File not found";
+        case ASSEMBLER_BUFFER_OVERFLOW:
+            return "Buffer overflow";
+        case ASSEMBLER_INVALID_TOKEN:
+            return "Invalid token";
+        case ASSEMBLER_LABEL_INVALID:
+            return "Invalid label";
+        case ASSEMBLER_BAD_EXPRESSION:
+            return "Malformed expression";
+        case ASSEMBLER_CONSTANT_REDEFINED:
+            return "Constant redefined";
+        case ASSEMBLER_INVALID_ADDRESS:
+            return "Invalid address";
+        case ASSEMBLER_INVALID_OPCODE:
+            return "Invalid opcode";
+        case ASSEMBLER_INVALID_OPERAND:
+            return "Invalid operand";
+        case ASSEMBLER_INVALID_ADDRESSING_MODE:
+            return "Invalid addressing mode";
+        case ASSEMBLER_INVALID_REGISTER:
+            return "Invalid register";
+        case ASSEMBLER_SYMBOL_NOT_FOUND:
+            return "Symbol not found";
+        case ASSEMBLER_ASSEMBLY_COMPLETE:
+            return "Assembly complete";
+        case ASSEMBLER_ASSEMBLY_DEFERRED:
+            return "Assembly deferred";
+
+    }
+ 
+}
+

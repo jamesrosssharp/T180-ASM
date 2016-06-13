@@ -36,7 +36,7 @@ public:
 
     static  AssemblerResult ParseExpression(Assembler* assem, const Token* operand, OpCode::Register& reg, 
                                             unsigned short& value, OpCode::AddressingMode& add);
-    static  AssemblerResult ParseConstantTerm(Assembler* assem, std::string constant, unsigned short& value); 
+    static  AssemblerResult ParseConstantTerm(Assembler* assem, const std::string& constant, unsigned short& value); 
 
 
 };
