@@ -56,6 +56,23 @@ bool OpCode::IsOpCode(const char* token)
     return false;
 }
 
+bool OpCode::IsRegister(const std::string& str)
+{
+    if (str == "A")
+        return true;
+    else if (str == "B")
+        return true;
+    else if (str == "C")
+        return true;
+    else if (str == "D")
+        return true;
+    else if (str == "S")
+        return true;
+
+    return false;
+}
+
+
 AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVector* tv)
 {
 
@@ -63,10 +80,11 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     const Token* operand = tv->getToken(tokenIdx + 1);
 
     OpCode::Register reg;
+    OpCode::Register reg2;
     unsigned short value = 0;
     OpCode::AddressingMode add;
         
-    AssemblerResult res = OpCode::ParseExpression(assem, operand, reg, value, add); 
+    AssemblerResult res = OpCode::ParseExpression(assem, operand, reg, reg2, value, add); 
 
     AssemblerResult error = ASSEMBLER_OK;
 
@@ -817,7 +835,7 @@ bail:
 
 }  
  
-AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, OpCode::Register& reg, unsigned short& value, OpCode::AddressingMode& add)
+AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, OpCode::Register& reg, OpCode::Register& reg2, unsigned short& value, OpCode::AddressingMode& add)
 {
 
     std::string s = Assembler::Trim(Assembler::ToUpper(operand->getToken()));
@@ -826,12 +844,10 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
 
     // try to determine addressing mode  
 
-    // First, look for operands of the form "a,<op>"
-    // For this case we have to set reg1 to REG_A and parse <op>.
-
+    reg2 = OpCode::REG_NONE;
 
     // indexed / register
-    // string can be "A", "B", "C" or "D" 
+    // string can be "A", "B", "C", "D" or "S" 
 
     //std::cout << s << std::endl;
 
@@ -958,39 +974,110 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
 
     int commaPos = s.find(",");
 
-    // search for register to register operations
 
-
-    // indexed with operand
-    // of form "reg,op"
-    
+   
     if (commaPos > 0)
     {
-         
-        add = OpCode::ADDRESSINGMODE_INDEXED_WITH_OPERAND;
+ 
+        std::string s1 = Assembler::Trim(s.substr(0, commaPos));
+        std::string s2 = Assembler::Trim(s.substr(commaPos+1, s.length()));
+
+ 
+             // search for register to register operations
     
-        std::string regStr = Assembler::Trim(s.substr(0, commaPos));
+        if (OpCode::IsRegister(s1), OpCode::IsRegister(s2))
+        {
+            add = OpCode::ADDRESSINGMODE_REGISTER_TO_REGISTER;
 
-        if (regStr == "B")
-        {
-            reg = OpCode::REG_B;
+            if (s1 == "A")
+            {
+                reg = OpCode::REG_A;
+            }
+            else if (s1 == "B")
+            {
+                reg = OpCode::REG_B;
+            }
+            else if (s1 == "C")
+            {
+                reg = OpCode::REG_C;
+            }
+            else if (s1 == "D")
+            {
+                reg = OpCode::REG_D;
+            }
+            else if (s1 == "S")
+            {
+                reg = OpCode::REG_S;
+            }
+
+            if (s2 == "A")
+            {
+                reg2 = OpCode::REG_A;
+            }
+            else if (s2 == "B")
+            {
+                reg2 = OpCode::REG_B;
+            }
+            else if (s2 == "C")
+            {
+                reg2 = OpCode::REG_C;
+            }
+            else if (s2 == "D")
+            {
+                reg2 = OpCode::REG_D;
+            }
+            else if (s2 == "S")
+            {
+                reg2 = OpCode::REG_S;
+            }
+
+            return ASSEMBLER_ASSEMBLY_COMPLETE;
+
         }
-        else if (regStr == "C")
+
+
+        // Look for operands of the form "a,<op>"
+        // For this case we have to set reg1 to REG_A and parse <op>.
+
+        else if (s1 == "A")
         {
-            reg = OpCode::REG_C;
+
+            reg = OpCode::REG_A;
+
+
+
         } 
-        else if (regStr == "D")
+
+        // indexed with operand
+        // of form "reg,op"
+    
+        else 
         {
-            reg = OpCode::REG_D;
-        }
-        else
-            return ASSEMBLER_INVALID_REGISTER;
-
-        std::string opStr = Assembler::Trim(s.substr(commaPos+1, s.length())); 
-
-        AssemblerResult res = OpCode::ParseConstantTerm(assem, opStr, value);
+            add = OpCode::ADDRESSINGMODE_INDEXED_WITH_OPERAND;
         
-        return res;
+            std::string regStr = Assembler::Trim(s.substr(0, commaPos));
+
+            if (regStr == "B")
+            {
+                reg = OpCode::REG_B;
+            }
+            else if (regStr == "C")
+            {
+                reg = OpCode::REG_C;
+            } 
+            else if (regStr == "D")
+            {
+                reg = OpCode::REG_D;
+            }
+            else
+                return ASSEMBLER_INVALID_REGISTER;
+
+            std::string opStr = Assembler::Trim(s.substr(commaPos+1, s.length())); 
+
+            AssemblerResult res = OpCode::ParseConstantTerm(assem, opStr, value);
+            
+            return res;
+        }
 
     }
 
@@ -1084,13 +1171,15 @@ int main(int argc, char *argv[])
 
     assem.setAddressForSymbol("SOME_SYMBOL", 0xfe00);
 
-    Token token(Token::OPERAND, "$100 + SOME_CONSTANT + SOME_SYMBOL");
+    //Token token(Token::OPERAND, "a, [b, $100 + SOME_CONSTANT + SOME_SYMBOL]");
+    Token token(Token::OPERAND, "a, d");
 
     OpCode::Register reg = OpCode::REG_NONE;
+    OpCode::Register reg2 = OpCode::REG_NONE;
     OpCode::AddressingMode add = OpCode::ADDRESSINGMODE_NONE;
     unsigned short value = 0;
 
-    AssemblerResult res = OpCode::ParseExpression(&assem, &token, reg, value, add);
+    AssemblerResult res = OpCode::ParseExpression(&assem, &token, reg, reg2, value, add);
 
     std::cout << "Register: ";
     
@@ -1112,6 +1201,29 @@ int main(int argc, char *argv[])
             std::cout << "D"; 
             break;
     }
+
+    std::cout << " Register 2: ";
+
+    switch (reg2)
+    {
+        case OpCode::REG_NONE:
+            std::cout << "None";
+            break;
+        case OpCode::REG_A:
+            std::cout << "A";
+            break;
+        case OpCode::REG_B:
+            std::cout << "B";
+            break;
+        case OpCode::REG_C:
+            std::cout << "C";
+            break;
+        case OpCode::REG_D:
+            std::cout << "D"; 
+            break;
+    }
+
+
 
     std::cout << " Addressing mode: ";
 
@@ -1138,7 +1250,8 @@ int main(int argc, char *argv[])
         case OpCode::ADDRESSINGMODE_INDIRECT_WITH_INDEX:
             std::cout << "Indirect with index";
             break;
-
+        case OpCode::ADDRESSINGMODE_REGISTER_TO_REGISTER:
+            std::cout << "Register to register";
     }
 
     std::cout << " Value: ";
