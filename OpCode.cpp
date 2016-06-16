@@ -761,6 +761,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     }
     else if (s == "LD")
     {
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
         if (reg == OpCode::REG_A)
         {
             switch (add)
@@ -842,7 +848,6 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
                     break;
                 case ADDRESSINGMODE_INDIRECT_WITH_INDEX:
 
-
                     switch (reg2)
                     {
                         case OpCode::REG_B:
@@ -882,6 +887,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
                             tv->pushAssembledByte((value & 0xff00) >> 8);
                             assem->advanceAssemblerAddress(3);
                             break;
+                        case ADDRESSINGMODE_IMMEDIATE:
+                            tv->pushAssembledByte(0x27);
+                            tv->pushAssembledByte(value & 0xff);
+                            tv->pushAssembledByte((value & 0xff00) >> 8);
+                            assem->advanceAssemblerAddress(3);
+                            break;
                         default:
                             error = ASSEMBLER_INVALID_ADDRESSING_MODE;
                             goto bail;
@@ -893,6 +904,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
                     {
                         case ADDRESSINGMODE_ABSOLUTE:
                             tv->pushAssembledByte(0x28);
+                            tv->pushAssembledByte(value & 0xff);
+                            tv->pushAssembledByte((value & 0xff00) >> 8);
+                            assem->advanceAssemblerAddress(3);
+                            break;
+                        case ADDRESSINGMODE_IMMEDIATE:
+                            tv->pushAssembledByte(0x2C);
                             tv->pushAssembledByte(value & 0xff);
                             tv->pushAssembledByte((value & 0xff00) >> 8);
                             assem->advanceAssemblerAddress(3);
@@ -911,6 +928,13 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
                             tv->pushAssembledByte((value & 0xff00) >> 8);
                             assem->advanceAssemblerAddress(3);
                             break;
+                        case ADDRESSINGMODE_IMMEDIATE:
+                            tv->pushAssembledByte(0x31);
+                            tv->pushAssembledByte(value & 0xff);
+                            tv->pushAssembledByte((value & 0xff00) >> 8);
+                            assem->advanceAssemblerAddress(3);
+                            break;
+
                         default:
                             error = ASSEMBLER_INVALID_ADDRESSING_MODE;
                             goto bail;
@@ -925,18 +949,94 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     }
     else if (s == "JMP")
     {
+        
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
+        switch (add)
+        {
+            case ADDRESSINGMODE_ABSOLUTE:
+                tv->pushAssembledByte(0x03);
+                tv->pushAssembledByte(value & 0xff);
+                tv->pushAssembledByte((value & 0xff00) >> 8);
+                assem->advanceAssemblerAddress(3); 
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+        } 
 
     }
     else if (s == "JNC")
     {
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
+        switch (add)
+        {
+            case ADDRESSINGMODE_ABSOLUTE:
+                tv->pushAssembledByte(0x0c);
+                tv->pushAssembledByte(value & 0xff);
+                tv->pushAssembledByte((value & 0xff00) >> 8);
+                assem->advanceAssemblerAddress(3); 
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+        } 
+
 
     }
     else if (s == "JNS")
     {
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
+        switch (add)
+        {
+            case ADDRESSINGMODE_ABSOLUTE:
+                tv->pushAssembledByte(0x0b);
+                tv->pushAssembledByte(value & 0xff);
+                tv->pushAssembledByte((value & 0xff00) >> 8);
+                assem->advanceAssemblerAddress(3); 
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+        } 
+
 
     }
     else if (s == "JNZ")
     {
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
+        switch (add)
+        {
+            case ADDRESSINGMODE_ABSOLUTE:
+                tv->pushAssembledByte(0x09);
+                tv->pushAssembledByte(value & 0xff);
+                tv->pushAssembledByte((value & 0xff00) >> 8);
+                assem->advanceAssemblerAddress(3); 
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+        } 
+
 
     }
     else if (s == "MOV")
