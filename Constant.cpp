@@ -176,15 +176,19 @@ AssemblerResult  Constant::ParseExpression(ConstantTable* const_table, SymbolTab
             } 
             else if (res == ASSEMBLER_ASSEMBLY_DEFERRED)
             {
-                return ASSEMBLER_ASSEMBLY_DEFERRED;
+                result = ASSEMBLER_ASSEMBLY_DEFERRED;
+                goto bail;
             }
             else
-                return ASSEMBLER_BAD_EXPRESSION;
-
+            {
+                result = ASSEMBLER_BAD_EXPRESSION;
+                goto bail;
+            }
         }
         else
         {
-            return ASSEMBLER_BAD_EXPRESSION;
+            result = ASSEMBLER_BAD_EXPRESSION;
+            goto bail;
         }
 
 

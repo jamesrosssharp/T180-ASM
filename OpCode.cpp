@@ -102,13 +102,18 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
 
     std::string s = Assembler::ToUpper(tok->getToken());
 
+    tv->resetAssembly();
+    tv->setAssembledAddress(assem->getAssemblerAddress());
+
     if (s ==  "ADC")
     {
 
-        tv->resetAssembly();
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-        
         switch (add)
         {
             case ADDRESSINGMODE_IMMEDIATE:
@@ -230,10 +235,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     else if (s == "ADD")
     {
 
-        tv->resetAssembly();
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-        
         switch (add)
         {
             case ADDRESSINGMODE_IMMEDIATE:
@@ -354,10 +361,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     else if (s == "AND")
     {
 
-        tv->resetAssembly();
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-        
         switch (add)
         {
             case ADDRESSINGMODE_IMMEDIATE:
@@ -479,10 +488,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     else if (s == "CALL")
     {
        
-        tv->resetAssembly();
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-        
         switch (add)
         {
             case ADDRESSINGMODE_ABSOLUTE:        
@@ -517,14 +528,9 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
         
         // 2. generate assembly
        
-        tv->resetAssembly();
         tv->pushAssembledByte(0x0f);    // CLF 
 
-        // 3. store address
-
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-
-        // 4. Advance assembler address
+        // 3. Advance assembler address
         
         assem->advanceAssemblerAddress(1);
 
@@ -532,10 +538,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     else if (s == "CMP")
     {
 
-        tv->resetAssembly();
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-        
         switch (add)
         {
             case ADDRESSINGMODE_IMMEDIATE:
@@ -654,10 +662,12 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     }
     else if (s == "DEC")
     {
-        tv->resetAssembly();
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->setAssembledAddress(assem->getAssemblerAddress());
- 
         switch (add)
         {
             case ADDRESSINGMODE_INDEXED:
@@ -701,24 +711,20 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
         
         // 2. generate assembly
        
-        tv->resetAssembly();
         tv->pushAssembledByte(0x00);    // halt 
 
-        // 3. store address
-
-        tv->setAssembledAddress(assem->getAssemblerAddress());
-
-        // 4. Advance assembler address
+        // 3. Advance assembler address
         
         assem->advanceAssemblerAddress(1);
     }
     else if (s == "INC")
     {
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
-        tv->resetAssembly();
-
-        tv->setAssembledAddress(assem->getAssemblerAddress());
- 
         switch (add)
         {
             case ADDRESSINGMODE_INDEXED:
@@ -751,13 +757,171 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
                 goto bail;
                 break;
         }
-       
-
-
+    
     }
     else if (s == "LD")
     {
+        if (reg == OpCode::REG_A)
+        {
+            switch (add)
+            {
+                case ADDRESSINGMODE_IMMEDIATE:
+                    tv->pushAssembledByte(0x18);
+                    tv->pushAssembledByte(value & 0xff);
+                    tv->pushAssembledByte((value & 0xff00) >> 8);
+                    assem->advanceAssemblerAddress(3);
+                    break;
+                case ADDRESSINGMODE_ABSOLUTE:
+                    tv->pushAssembledByte(0x01);
+                    tv->pushAssembledByte(value & 0xff);
+                    tv->pushAssembledByte((value & 0xff00) >> 8); 
+                    assem->advanceAssemblerAddress(3);
+                    break;
+                case ADDRESSINGMODE_INDEXED:
+                    switch (reg2)
+                    {
+                        case OpCode::REG_B:
+                            tv->pushAssembledByte(0x3e);
+                            break;
+                        case OpCode::REG_C:
+                            tv->pushAssembledByte(0x66);
+                            break;
+                        case OpCode::REG_D:
+                            tv->pushAssembledByte(0x8e);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_REGISTER;
+                            goto bail; 
+                    }
+                    assem->advanceAssemblerAddress(1);
+                    break;
+                case ADDRESSINGMODE_INDEXED_WITH_OPERAND:
+                    switch (reg2)
+                    {
+                        case OpCode::REG_B:
+                            tv->pushAssembledByte(0x48);
+                            break;
+                        case OpCode::REG_C:
+                            tv->pushAssembledByte(0x70);
+                            break;
+                        case OpCode::REG_D:
+                            tv->pushAssembledByte(0x98);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_REGISTER;
+                            goto bail;
+                    }
+                    
+                    tv->pushAssembledByte(value & 0xff);
+                    tv->pushAssembledByte((value & 0xff00) >> 8);
+                    assem->advanceAssemblerAddress(3);
 
+                    break;
+                case ADDRESSINGMODE_INDIRECT:
+
+                    switch (reg2)
+                    {
+                        case OpCode::REG_B:
+                            tv->pushAssembledByte(0x52);
+                            break;
+                        case OpCode::REG_C:
+                            tv->pushAssembledByte(0x7a);
+                            break;
+                        case OpCode::REG_D:
+                            tv->pushAssembledByte(0xa2);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_REGISTER;
+                            goto bail;
+                    }
+
+                    tv->pushAssembledByte(value & 0xff);
+                    tv->pushAssembledByte((value & 0xff00) >> 8);
+                    assem->advanceAssemblerAddress(3);
+
+                    break;
+                case ADDRESSINGMODE_INDIRECT_WITH_INDEX:
+
+
+                    switch (reg2)
+                    {
+                        case OpCode::REG_B:
+                            tv->pushAssembledByte(0x5c);
+                            break;
+                        case OpCode::REG_C:
+                            tv->pushAssembledByte(0x84);
+                            break;
+                        case OpCode::REG_D:
+                            tv->pushAssembledByte(0xac);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_REGISTER;
+                            goto bail;
+                    }
+
+                    tv->pushAssembledByte(value & 0xff);
+                    tv->pushAssembledByte((value & 0xff00) >> 8);
+                    assem->advanceAssemblerAddress(3);
+
+                    break;
+                default:
+                    error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                    goto bail;                    
+            }
+        }
+        else
+        {
+            switch (reg)
+            {
+                case OpCode::REG_B:
+                    switch (add)
+                    {
+                        case ADDRESSINGMODE_ABSOLUTE:
+                            tv->pushAssembledByte(0x23);
+                            tv->pushAssembledByte(value & 0xff);
+                            tv->pushAssembledByte((value & 0xff00) >> 8);
+                            assem->advanceAssemblerAddress(3);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                            goto bail;
+                    }
+  
+                    break;
+                case OpCode::REG_C:
+                    switch (add)
+                    {
+                        case ADDRESSINGMODE_ABSOLUTE:
+                            tv->pushAssembledByte(0x28);
+                            tv->pushAssembledByte(value & 0xff);
+                            tv->pushAssembledByte((value & 0xff00) >> 8);
+                            assem->advanceAssemblerAddress(3);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                            goto bail;
+                    }
+                    break;
+                case OpCode::REG_D:
+                    switch (add)
+                    {
+                        case ADDRESSINGMODE_ABSOLUTE:
+                            tv->pushAssembledByte(0x2d);
+                            tv->pushAssembledByte(value & 0xff);
+                            tv->pushAssembledByte((value & 0xff00) >> 8);
+                            assem->advanceAssemblerAddress(3);
+                            break;
+                        default:
+                            error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                            goto bail;
+                    }
+                    break;
+                default:
+                    error = ASSEMBLER_INVALID_REGISTER;
+                    goto bail;
+            }
+        }
+    
     }
     else if (s == "JMP")
     {
@@ -837,6 +1001,10 @@ bail:
  
 AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, OpCode::Register& reg, OpCode::Register& reg2, unsigned short& value, OpCode::AddressingMode& add)
 {
+
+
+    if (operand->getToken() == NULL)
+        return ASSEMBLER_ASSEMBLY_COMPLETE;
 
     std::string s = Assembler::Trim(Assembler::ToUpper(operand->getToken()));
 
@@ -1044,6 +1212,11 @@ AssemblerResult OpCode::ParseExpression(Assembler* assem, const Token* operand, 
 
             reg = OpCode::REG_A;
 
+            OpCode::Register reg3;
+
+            Token tok(Token::OPERAND, s2.c_str());
+
+            return  OpCode::ParseExpression(assem, &tok, reg2, reg3, value, add);
 
 
         } 
@@ -1171,8 +1344,8 @@ int main(int argc, char *argv[])
 
     assem.setAddressForSymbol("SOME_SYMBOL", 0xfe00);
 
-    //Token token(Token::OPERAND, "a, [b, $100 + SOME_CONSTANT + SOME_SYMBOL]");
-    Token token(Token::OPERAND, "a, d");
+    Token token(Token::OPERAND, "a, [b, $100 + SOME_CONSTANT + SOME_SYMBOL]");
+    //Token token(Token::OPERAND, "a, d");
 
     OpCode::Register reg = OpCode::REG_NONE;
     OpCode::Register reg2 = OpCode::REG_NONE;

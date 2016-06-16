@@ -379,6 +379,8 @@ const char* Assembler::ReturnCodeToString(AssemblerResult res)
             return "Assembly complete";
         case ASSEMBLER_ASSEMBLY_DEFERRED:
             return "Assembly deferred";
+        case ASSEMBLER_ARGUMENT_REQUIRED:
+            return "Argument required";
 
     }
  
