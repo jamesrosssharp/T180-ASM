@@ -1042,14 +1042,181 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     else if (s == "MOV")
     {
 
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
+        switch (add)
+        {
+            case ADDRESSINGMODE_REGISTER_TO_REGISTER:
+
+                switch (reg)
+                {
+                    case OpCode::REG_A:
+       
+                        switch (reg2)
+                        {
+                            case OpCode::REG_B:
+                                tv->pushAssembledByte(0x24);
+                                assem->advanceAssemblerAddress(1); 
+                                break;
+                            case OpCode::REG_C:
+                                tv->pushAssembledByte(0x29);
+                                assem->advanceAssemblerAddress(1);
+                                break;
+                            case OpCode::REG_D:
+                                tv->pushAssembledByte(0x2e);
+                                assem->advanceAssemblerAddress(1); 
+                                break;
+                            default:
+                                error = ASSEMBLER_INVALID_REGISTER;
+                                goto bail;
+
+                        }
+ 
+                        break;
+                    case OpCode::REG_B:
+                        switch (reg2)
+                        {
+                            case OpCode::REG_A:
+                                tv->pushAssembledByte(0x25);
+                                assem->advanceAssemblerAddress(1); 
+                                break;
+                            default:
+                                error = ASSEMBLER_INVALID_REGISTER;
+                                goto bail;
+
+                        }
+                        break;
+                    case OpCode::REG_C:
+                        switch (reg2)
+                        {
+                            case OpCode::REG_A:
+                                tv->pushAssembledByte(0x2a);
+                                assem->advanceAssemblerAddress(1); 
+                                break;
+                            default:
+                                error = ASSEMBLER_INVALID_REGISTER;
+                                goto bail;
+
+                        }
+                        break;
+                    case OpCode::REG_D:
+                        switch (reg2)
+                        {
+                            case OpCode::REG_A:
+                                tv->pushAssembledByte(0x2f);
+                                assem->advanceAssemblerAddress(1); 
+                                break;
+                            default:
+                                error = ASSEMBLER_INVALID_REGISTER;
+                                goto bail;
+
+                        }
+                        break;
+                    default:
+                        error = ASSEMBLER_INVALID_REGISTER;
+                        goto bail;
+
+                }
+
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+
+        }
+
     }
     else if (s == "POP")
     {
 
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
+
+        switch (add)
+        {
+            case ADDRESSINGMODE_INDEXED:
+                switch (reg)
+                {
+                    case OpCode::REG_A:
+                        tv->pushAssembledByte(0x12);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_B:
+                        tv->pushAssembledByte(0x33);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_C:
+                        tv->pushAssembledByte(0x37);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_D:
+                        tv->pushAssembledByte(0x3b);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_S:
+                        tv->pushAssembledByte(0xb7);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    default:
+                        error = ASSEMBLER_INVALID_REGISTER;
+                        goto bail;
+                }
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+        } 
+
     }
     else if (s == "PUSH")
     {
+        if (operand == NULL)
+        {
+            error = ASSEMBLER_ARGUMENT_REQUIRED;
+            goto bail;
+        }
 
+        switch (add)
+        {
+            case ADDRESSINGMODE_INDEXED:
+                switch (reg)
+                {
+                    case OpCode::REG_A:
+                        tv->pushAssembledByte(0x11);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_B:
+                        tv->pushAssembledByte(0x32);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_C:
+                        tv->pushAssembledByte(0x36);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_D:
+                        tv->pushAssembledByte(0x3a);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    case OpCode::REG_S:
+                        tv->pushAssembledByte(0xb6);
+                        assem->advanceAssemblerAddress(1);      
+                        break;
+                    default:
+                        error = ASSEMBLER_INVALID_REGISTER;
+                        goto bail;
+                }
+                break;
+            default:
+                error = ASSEMBLER_INVALID_ADDRESSING_MODE;
+                goto bail;
+        } 
     }
     else if (s == "RET")
     {
