@@ -83,7 +83,7 @@ AssemblerResult OpCode::AssembleOpCode(Assembler* assem, int tokenIdx, TokenVect
     OpCode::Register reg2;
     unsigned short value = 0;
     OpCode::AddressingMode add;
-        
+
     AssemblerResult res = OpCode::ParseExpression(assem, operand, reg, reg2, value, add); 
 
     AssemblerResult error = ASSEMBLER_OK;

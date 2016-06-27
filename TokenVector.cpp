@@ -11,7 +11,8 @@
 #include "PseudoOpCode.h"
 #include "Token.h"
 
-TokenVector::TokenVector()
+TokenVector::TokenVector() :
+    m_completelyAssembled(false)
 {
 }
 
@@ -26,6 +27,11 @@ TokenVector::~TokenVector()
     delete m_file;
     delete m_line;
 }   
+
+void TokenVector::markComplete()
+{
+    m_completelyAssembled = true;
+}
 
 AssemblerResult TokenVector::tokenize(const std::string& file, int lineNo, const std::string& line)
 {
@@ -254,4 +260,19 @@ void        TokenVector::printAssembly()
         std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)(*iter) << " ";
 
 
+}
+
+std::vector<unsigned char>::iterator TokenVector::beginAssembly()
+{
+    return m_assembled_bytes.begin();
+}
+
+std::vector<unsigned char>::iterator TokenVector::endAssembly()
+{
+    return m_assembled_bytes.end();
+}
+
+unsigned short TokenVector::getAssembledAddress() const
+{
+    return m_assembled_address;
 }

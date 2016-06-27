@@ -28,6 +28,12 @@ public:
     void pushAssembledByte(unsigned char byte); 
     
     void setAssembledAddress(unsigned short address);
+    unsigned short getAssembledAddress() const;
+
+    void markComplete();
+
+    std::vector<unsigned char>::iterator beginAssembly();
+    std::vector<unsigned char>::iterator endAssembly(); 
 
 private:
 
@@ -39,5 +45,7 @@ private:
 
     unsigned short   m_assembled_address;
     std::vector <unsigned char> m_assembled_bytes; 
+
+    bool    m_completelyAssembled; 
 
 };

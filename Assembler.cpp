@@ -15,6 +15,9 @@
 #include "PseudoOpCode.h"
 #include "OpCode.h"
 
+#include "Writer.h"
+#include "BinWriter.h"
+
 Assembler::Assembler()
 {
 }
@@ -181,8 +184,24 @@ AssemblerResult Assembler::assembleLine(TokenVector* tv)
     switch (tok1->getType())
     {
         case Token::LABEL:
-            //tok1->setLabelAddress();
-            // find the symbol in the symbol table 
+            {
+                // find the symbol in the symbol table 
+               
+                const std::string *s = tok1->getToken();
+
+                setAddressForSymbol(s->c_str(), getAssemblerAddress());
+                
+                AssemblerResult res;
+
+                if (tv->getToken(1) != NULL)
+                    res = OpCode::AssembleOpCode(this, 1, tv);                     
+
+               if (res == ASSEMBLER_ASSEMBLY_COMPLETE)
+                    lineAssembled = true;
+                else if (res != ASSEMBLER_OK)
+                    return res;
+
+            }
             break; 
         case Token::OPCODE:
         {
@@ -210,17 +229,36 @@ AssemblerResult Assembler::assembleLine(TokenVector* tv)
 
     if (lineAssembled)
     {
-
-    }
-    else
-    {
-
-
+        tv->markComplete();
     }
 
     return ASSEMBLER_OK;
 
 }
+
+AssemblerResult Assembler::performAssemblyPass()
+{
+    setAssemblerAddress(0);
+
+    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
+    {
+        AssemblerResult result;
+
+        result = assembleLine(*iter);
+
+        switch (result)
+        {   
+            case ASSEMBLER_OK:
+                break;
+            default:
+                std::cout << "Error" << std::endl;
+                return result; 
+        }
+    }
+
+    return ASSEMBLER_OK;
+}
+
 
 AssemblerResult Assembler::assemble(const char* infile, bool compileOnly, bool hexOutput, const char* outfile)
 {
@@ -274,39 +312,43 @@ AssemblerResult Assembler::assemble(const char* infile, bool compileOnly, bool h
             if ((*iter)->getToken(0)->getType() == Token::LABEL)
                 m_symbolTable.addSymbol((*iter)->getToken(0)->getToken());
 
-    // print out symbol table
     
-    //printSymbols();    
-    //printConstants();
 
     // assemble
+    // first pass
  
-    setAssemblerAddress(0);
+    res = performAssemblyPass();
 
-    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
-    {
-        AssemblerResult result;
+    if (res != ASSEMBLER_OK)
+        return res;
 
-        result = assembleLine(*iter);
+    // second pass
+    
+    res = performAssemblyPass();
+    
+    if (res != ASSEMBLER_OK)
+        return res;
 
-        switch (result)
-        {   
-            case ASSEMBLER_OK:
-                break;
-            default:
-                std::cout << "Error" << std::endl;
-                return result; 
-        }
-    }
+    Writer* writer = new BinWriter();
+
+    writer->write(outfile, *this);   
 
     // print assembly
     
-    for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
-    {
-        (*iter)->printAssembly();
-    }
+    //for (std::vector<TokenVector*>::iterator iter = m_lineTokens.begin(); iter != m_lineTokens.end(); iter++)
+    //{
+    //    (*iter)->printAssembly();
+    //}
      
-    std::cout << std::endl;
+    //std::cout << std::endl;
+   
+    // decide on output format. If we are assembling and linking in 1 operation,    
+    // we need to check that the assembly is complete (already linked). Then output
+    //
+    //  Else if compiling only, write out elf object
+    //
+    
+
 }
 
 void Assembler::printTokens()
@@ -385,4 +427,15 @@ const char* Assembler::ReturnCodeToString(AssemblerResult res)
     }
  
 }
+
+std::vector<TokenVector*>::iterator Assembler::lineTokensBegin()
+{
+    return m_lineTokens.begin();
+}
+
+std::vector<TokenVector*>::iterator Assembler::lineTokensEnd()
+{
+    return m_lineTokens.end();
+}
+
 

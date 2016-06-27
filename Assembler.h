@@ -41,10 +41,15 @@ public:
     AssemblerResult addSymbol(const char* symbol);
 
     AssemblerResult setAddressForSymbol(const char* symbol, unsigned short address); 
+    
+    AssemblerResult performAssemblyPass();
 
     static std::string Trim(const std::string& str);
 
     static const char* ReturnCodeToString(AssemblerResult res);
+
+    std::vector<TokenVector*>::iterator lineTokensBegin();
+    std::vector<TokenVector*>::iterator lineTokensEnd();
 
 private:
 
